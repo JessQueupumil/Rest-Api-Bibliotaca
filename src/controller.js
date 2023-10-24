@@ -1,4 +1,5 @@
 import {pool} from './database.js';
+import { controlAdd } from './controldeerrores.js';
 
 class LibroController{
 
@@ -7,10 +8,17 @@ class LibroController{
         res.json(result);
     }
 
-    async add(req,res){
-        const libro=req.body;
-        const [result] = await pool.query(`INSERT INTO libros(nombre,autor,categoria,anio_publicación,isbn) VALUES (?, ?, ?, ? ,?)`, [libro.nombre, libro.autor, libro.categoria, libro.anio_publicación, libro.isbn]);
-        res.json ({"Id insertado": result.insertId});
+    //try -catch //
+    async add (req, res){
+        try {
+        const libro = req.body;
+        controlAdd(libro);
+        const [result] = await pool.query(`INSERT INTO Libros(nombre, autor, categoria, anio_publicacion, isbn)
+            VALUES (?, ?, ?, ? ,?)`, [libro.nombre, libro.autor, libro.categoria, libro.anio_publicacion, libro.isbn]);
+            res.status(201).json ({"ID insertado": result.insertId});
+        } catch (e) {
+        res.status(404).json({"error":e});
+        }
     }
 
     async getOne(req,res){
