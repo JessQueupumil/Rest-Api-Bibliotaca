@@ -1,6 +1,7 @@
 import {pool} from './database.js';
 import { controlAdd } from './controldeerrores.js';
 import {controlGetOne} from "./controldeerrores.js";
+import {controlUpdate} from "./controldeerrores.js";
 
 class LibroController {
 
@@ -14,7 +15,7 @@ class LibroController {
         try {
         const libro = req.body;
         controlAdd(libro);
-        const [result] = await pool.query(`INSERT INTO Libros(nombre, autor, categoria, anio_publicacion, isbn)
+        const [result] = await pool.query(`INSERT INTO libros(nombre, autor, categoria, anio_publicacion, isbn)
             VALUES (?, ?, ?, ? ,?)`, [libro.nombre, libro.autor, libro.categoria, libro.anio_publicacion, libro.isbn]);
             res.status(201).json ({"ID insertado": result.insertId});
         } catch (e) {
@@ -22,12 +23,13 @@ class LibroController {
         }
     }
 
+    //try - catch//
     async getOne (req, res){
         try {
         const libro = {"id": parseInt(req.params.id)};
         controlGetOne(libro);
         const id_libro = parseInt(libro.id);
-        const [result] = await pool.query(`SELECT * FROM Libros WHERE id=?`, [id_libro]);
+        const [result] = await pool.query(`SELECT * FROM libros WHERE id=?`, [id_libro]);
         if (result.length > 0){ res.json (result);
         }
         else {
@@ -40,13 +42,26 @@ class LibroController {
     }
 }
 
-    async update(req,res){
-        const libro=req.body;
-        const id_libro=parseInt(libro.id);
-        const [result]= await pool.query (`UPDATE libros SET nombre=(?), autor=(?),categoria=(?),anio_publicacion=(?),isbn=(?), WHERE id=(?)`,
-        [libro.nombre, libro.autor, libro.categoria, libro.anio_publicación,libro.isbn, id_libro]);
-        res.json({"Libro acctualizado":result.changedRows});
+//try -catch//
+    async update (req, res) {
+    try {
+      //console.log(req.body);
+    const libro = req.body;
+    controlUpdate(libro);
+    const id_libro = parseInt(libro.id);
+    const [result] = await pool.query(`UPDATE Libros SET nombre=(?), autor=(?), categoria=(?), anio_publicacion=(?), isbn=(?) WHERE id=(?)`,
+    [libro.nombre, libro.autor, libro.categoria, libro.anio_publicacion, libro.isbn, id_libro]);
+    if(result.affectedRows>0){
+                res.json("¡ El libro ha sido actualizado!");
+            }else{
+                throw "No se puedo actualizar el libro especificado. Controle que el id sea válido";
+            }
+    } catch(e) {
+    res.status(404).json({"error": e});
     }
+}
+
+
 }
 
 export const libro = new LibroController();

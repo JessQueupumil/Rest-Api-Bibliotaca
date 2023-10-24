@@ -4,7 +4,7 @@ function controlEspaciosEnBlanco(libro){
 		return resultado && valor!=="";
 	},true);
 
-	if(!valido) throw("Se ha enviado uno o más campos en blanco.");
+	if(!valido) throw("se ha enviado uno o más campos en blanco.");
 }
 
 function controlID(id){
