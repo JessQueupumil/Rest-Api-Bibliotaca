@@ -1,7 +1,8 @@
 import {pool} from './database.js';
 import { controlAdd } from './controldeerrores.js';
+import {controlGetOne} from "./controldeerrores.js";
 
-class LibroController{
+class LibroController {
 
     async getAll(req, res){
         const [result] = await pool.query('SELECT * FROM libros');
@@ -21,16 +22,23 @@ class LibroController{
         }
     }
 
-    async getOne(req,res){
-        const libro=req.body;
-        const [result] = await pool.query(`SELECT * FROM libros WHERE id=?`, [libro.id]);
-        if (result.length>0){
-            res.json (result);
+    async getOne (req, res){
+        try {
+        const libro = {"id": parseInt(req.params.id)};
+        controlGetOne(libro);
+        const id_libro = parseInt(libro.id);
+        const [result] = await pool.query(`SELECT * FROM Libros WHERE id=?`, [id_libro]);
+        if (result.length > 0){ res.json (result);
         }
         else {
-            res.json({"Error": "No existe un libro con el Id especificado"});
+            throw (`No existe un libro con el id: ${id_libro}.`);
+        }
+        } catch(e) {
+        if(e.errno===1054) {
+            res.json({"Error": "Usted ha ingresado un valor distinto a un número de ID."});
         }
     }
+}
 
     async update(req,res){
         const libro=req.body;
@@ -40,4 +48,5 @@ class LibroController{
         res.json({"Libro acctualizado":result.changedRows});
     }
 }
+
 export const libro = new LibroController();
