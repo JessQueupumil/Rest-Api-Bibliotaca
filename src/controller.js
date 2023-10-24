@@ -1,7 +1,8 @@
 import {pool} from './database.js';
-import { controlAdd } from './controldeerrores.js';
+import {controlAdd } from './controldeerrores.js';
 import {controlGetOne} from "./controldeerrores.js";
 import {controlUpdate} from "./controldeerrores.js";
+import {controlDelete} from "./controldeerrores.js";
 
 class LibroController {
 
@@ -49,7 +50,7 @@ class LibroController {
     const libro = req.body;
     controlUpdate(libro);
     const id_libro = parseInt(libro.id);
-    const [result] = await pool.query(`UPDATE Libros SET nombre=(?), autor=(?), categoria=(?), anio_publicacion=(?), isbn=(?) WHERE id=(?)`,
+    const [result] = await pool.query(`UPDATE libros SET nombre=(?), autor=(?), categoria=(?), anio_publicacion=(?), isbn=(?) WHERE id=(?)`,
     [libro.nombre, libro.autor, libro.categoria, libro.anio_publicacion, libro.isbn, id_libro]);
     if(result.affectedRows>0){
                 res.json("¡ El libro ha sido actualizado!");
@@ -61,7 +62,23 @@ class LibroController {
     }
 }
 
-
+//try -catch//
+async delete(req, res) {
+    try {
+    const libro = req.body;
+    controlDelete(libro);
+    const isbn = libro.isbn;
+    const [result] = await pool.query(`DELETE FROM libros where isbn=(?)`, isbn);
+    if (result.affectedRows>0) {
+        res.json(`El libro ha sido eliminado.`);
+    } else {
+        res.json(`No se pudo eliminar el libro. Controle el isbn ingresado.`);
+    }
+    } catch(e) {
+      //console.log(e);
+    res.status(404).json({"error": e});
+    }
+}
 }
 
 export const libro = new LibroController();
